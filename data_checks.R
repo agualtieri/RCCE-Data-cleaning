@@ -1,4 +1,4 @@
-## VENA Assessment - Data Cleaning Script - Data checks
+## RCCE Assessment - Data Cleaning Script - Data checks
 ## alberto.gualtieri@reach-initiative.org 
 ## V1
 ## 25/08/2020
@@ -7,12 +7,18 @@ rm(list=ls())
 
 today <- Sys.Date()
 
+## Download necessary packages
+# devtools::install_github("mabafaba/clog", build_opts = c(), force = TRUE)
+# install.packages("tidyverse")
+# install.packages("openxlsx")
+# install.packages("stringr")
+# install.packages("lubridate")
+
 ## Load libraries
 require(tidyverse)
 require(openxlsx)
 require(stringr)
 require(lubridate)
-require(cleaninginspectoR)
 
 
 ## Load sources
@@ -21,19 +27,17 @@ source("./R/check_time.R")
 
 
 
-## Load inputs
-data <- read.csv("./input/RCCE_survey_-_latest_version_-_False_-_2020-08-31-07-59-54.csv", stringsAsFactors = FALSE, check.names = FALSE)
+## Upload data to be cleaned  - load the latest file that needs to be cleaned
+data <- read.xlsx("./input/RCCE_survey_-_latest_version_-_False_-_2020-09-02-12-41-52.xlsx")
 names(data)[names(data) == "_index"] <- "index"
 names(data)[names(data) == "_uuid"] <- "uuid"
 
-## Replace "/" with "." in col headers -- can be removed if data downloaded appropriatly from kobo server
+## Replace "/" with "." in col headers -- can be commented if data downloaded appropriatly from kobo server
 colnames(data) <- gsub("/", ".", colnames(data))
 
 
 
 ### Enumerators' behaviour checks
-
-
 ## Check survey time. Limits for Refugees are: 30-70 and for Hosts 20-50
 ref_timecheck <- data %>% filter(status == "yes") %>% check_time(30, 70)
 host_timecheck <- data %>% filter(status == "no") %>% check_time(20, 50)
@@ -356,6 +360,10 @@ if(nrow(comm_chan)>=1) {
   print("No favourite information channel issues found")
 }
 
+### Interview Feedback
+int_feedback <- data %>% select(interview_feedback, respondent_sex, respondent_age, nationality, nationality_other, status, district_name, sub_county_div, refugee_settlement, 
+                                feedback_details, corrective_measure, complainant_name, complainant_type, complainant_id, respondent_telephone, name_pers_recording, title_pers_recording,
+                                feedback_note) %>% filter(interview_feedback == "yes")
 
 ## Bind all
 cleaning_log <- rbind(covid_comm_log,
@@ -363,9 +371,11 @@ cleaning_log <- rbind(covid_comm_log,
                       barries_issue_log,
                       comm_chan_log)
 ## Final
-list <- list("Enumerators check" = enumerator_checks,
+list <- list("Enumerators checks" = enumerator_checks,
              "Cleaning log" = cleaning_log,
-             "Productivity" = n_surveys_log)
+             "Productivity" = n_surveys_log,
+             "Interview feedback" = int_feedback)
 
 write.xlsx(list, paste0("./output/rcce_cleaning_log_",today,".xlsx"))
+browseURL(paste0("./output/rcce_cleaning_log_",today,".xlsx"))
 
