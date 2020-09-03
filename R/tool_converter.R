@@ -1,4 +1,4 @@
-## VENA Assessment - Tool converter
+## RCCE Assessment - Tool converter
 ## alberto.gualtieri@reach-initiative.org 
 ## V1
 ## 28/08/2020

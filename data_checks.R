@@ -28,7 +28,7 @@ source("./R/check_time.R")
 
 
 ## Upload data to be cleaned  - load the latest file that needs to be cleaned
-data <- read.xlsx("./input/RCCE_survey_-_latest_version_-_False_-_2020-09-02-12-41-52.xlsx")
+data <- read.xlsx("./input/RCCE_survey_-_latest_version_-_False_-_2020-09-03-06-57-41.xlsx")
 names(data)[names(data) == "_index"] <- "index"
 names(data)[names(data) == "_uuid"] <- "uuid"
 
@@ -189,7 +189,7 @@ enumerator_checks <- rbind(check_time_log, shortest_path_log)
 
 ## Check 1: How often the respondent received COVID-related info in the past 2 months and when was the last communication
 covid_comm <- data %>% select(uuid, enumerator, sub_county_div, comm_freq, last_comm_covid) %>% 
-              mutate(comm_issue = ifelse(comm_freq == "daily" | comm_freq == "more_then_1_week" & last_comm_covid == "past_24h" | last_comm_covid == "past_7_days", 0, 1)) %>%
+              mutate(comm_issue = ifelse(comm_freq == "daily" | comm_freq == "at_least_once_week" & last_comm_covid == "past_24h" | last_comm_covid == "past_7_days", 0, 1)) %>%
               mutate(comm_issue = ifelse(last_comm_covid == "do_not_remember", 0, comm_issue)) %>% filter(comm_issue == 1)
 
 if(nrow(covid_comm)>=1) {
