@@ -64,7 +64,7 @@ sapply(data_clean, class)
 
 
 
-write.xlsx(data_clean, paste0("./output/rcce_clean_dataset_",today,"_V2.xlsx"))
-browseURL(paste0("./output/rcce_clean_dataset_",today,"_V2.xlsx"))
+write.xlsx(data_clean, paste0("./output/rcce_clean_dataset_",today,".xlsx"))
+browseURL(paste0("./output/rcce_clean_dataset_",today,".xlsx"))
 
 

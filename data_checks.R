@@ -86,8 +86,8 @@ if(nrow(all_timecheck) >= 1){
 ## Check for shortest path
 data$CountNa <- rowSums(apply(is.na(data), 2, as.numeric))
 
-shortest_path <- data %>% select("uuid", "enumerator", "sub_county_div", "status", "CountNa")
-shortest_path <- shortest_path %>% filter(CountNa > 240)
+shortest_path <- data %>% select("uuid", "enumerator", "district_name", "status", "CountNa")
+shortest_path <- shortest_path %>% filter(CountNa > 280)
 
 shortest_path <- merge(x = shortest_path, y = data[ , c("uuid", "today")], by = "uuid", all.x=TRUE)
 
@@ -104,7 +104,7 @@ if(nrow(shortest_path)>=1) {
   shortest_path_log <- data.frame(uuid = shortest_path$uuid, 
                                   date = shortest_path$today,
                                   enumerator = shortest_path$enumerator,
-                                  area = shortest_path$sub_county_div,
+                                  area = shortest_path$district_name,
                                   status = shortest_path$status,
                                   variable = shortest_path$variable,
                                   issue = shortest_path$issue_type, 
@@ -132,12 +132,12 @@ if(nrow(shortest_path)>=1) {
 }
 
 ## Check number of surveys per enumerator
-n_surveys <- data %>% select("sub_county_div", "start", "end", "enumerator") %>% 
+n_surveys <- data %>% select("district_name", "refugee_settlement", "start", "end", "enumerator") %>% 
                                  separate(start, c("start_date", "start_time"), "T") %>% separate(end, c("end_date", "end_time"), "T")
 
-n_surveys <- n_surveys %>% select(sub_county_div, start_date, enumerator) %>% 
-                                             group_by(sub_county_div, start_date, enumerator) %>% mutate(n_surveys = n()) %>% 
-                                                                      mutate(issue=ifelse((n_surveys < 5), "less than 8 surveys", "no issue")) 
+n_surveys <- n_surveys %>% select(district_name, refugee_settlement, start_date, enumerator) %>% 
+                                             group_by(start_date, enumerator) %>% mutate(n_surveys = n()) %>% 
+                                                                      mutate(issue=ifelse((n_surveys < 6), "less than 6 surveys", "no issue")) 
 
 
                                                            
@@ -154,7 +154,8 @@ if(nrow(n_surveys)>=1) {
   n_surveys_log <- data.frame(uuid = n_surveys$uuid, 
                                   date = n_surveys$start_date,
                                   enumerator = n_surveys$enumerator,
-                                  area = n_surveys$sub_county_div,
+                                  district = n_surveys$district_name,
+                                  settlement = n_surveys$refugee_settlement,
                                   status = n_surveys$status,
                                   variable = n_surveys$variable,
                                   issue = n_surveys$issue, 
@@ -168,7 +169,8 @@ if(nrow(n_surveys)>=1) {
   n_surveys_log <- data.frame(uuid = as.character(),
                                   date = as.character(),
                                   enumerator = as.character(),
-                                  area = as.character(),
+                                  district = as.character(),
+                                  settlement = as.character(),
                                   status = as.character(),
                                   variable = as.character(),
                                   issue = as.character(),
@@ -188,7 +190,7 @@ enumerator_checks <- rbind(check_time_log, shortest_path_log)
 ### Data quality checks
 
 ## Check 1: How often the respondent received COVID-related info in the past 2 months and when was the last communication
-covid_comm <- data %>% select(uuid, enumerator, sub_county_div, comm_freq, last_comm_covid) %>% 
+covid_comm <- data %>% select(uuid, enumerator, district_name, comm_freq, last_comm_covid) %>% 
               mutate(comm_issue = ifelse(comm_freq == "daily" | comm_freq == "at_least_once_week" & last_comm_covid == "past_24h" | last_comm_covid == "past_7_days", 0, 1)) %>%
               mutate(comm_issue = ifelse(last_comm_covid == "do_not_remember", 0, comm_issue)) %>% filter(comm_issue == 1)
 
@@ -205,7 +207,7 @@ if(nrow(covid_comm)>=1) {
   
   covid_comm_log <- data.frame(uuid = covid_comm$uuid, 
                                 enumerator = covid_comm$enumerator,
-                                area = covid_comm$sub_county_div,
+                                area = covid_comm$district_name,
                                 variable = covid_comm$variable,
                                 issue = covid_comm$issue,
                                 var_to_change = covid_comm$var_to_change,
@@ -233,7 +235,7 @@ if(nrow(covid_comm)>=1) {
 
 
 ## Check 2: If respondent reported a predominant source of income he cannot report no access to livelihood opportunities
-liveli_issue <- data %>% select(uuid, enumerator, sub_county_div, economic_activity, livilihood_access) %>%
+liveli_issue <- data %>% select(uuid, enumerator, district_name, economic_activity, livilihood_access) %>%
                         mutate(liveli_issue = ifelse(economic_activity != "none" & livilihood_access == "no" | livilihood_access == "no_answer", 1, 0)) %>% filter(liveli_issue == 1)
 
 if(nrow(liveli_issue)>=1) {
@@ -249,7 +251,7 @@ if(nrow(liveli_issue)>=1) {
   
   liveli_issue_log <- data.frame(uuid = liveli_issue$uuid, 
                                  enumerator = liveli_issue$enumerator,
-                                 area = liveli_issue$sub_county_div,
+                                 area = liveli_issue$district_name,
                                  variable = liveli_issue$variable,
                                  issue = liveli_issue$issue,
                                  var_to_change = liveli_issue$var_to_change,
@@ -275,7 +277,7 @@ if(nrow(liveli_issue)>=1) {
 
 
 ## Check 3: Issues with reporting barriers to reading and hearing but not reporting disabilities
-barries_issue <- data %>% select(uuid, enumerator, sub_county_div, chronic_illness_disease, difficulty_seeing, difficulty_hearing) %>%
+barries_issue <- data %>% select(uuid, enumerator, district_name, chronic_illness_disease, difficulty_seeing, difficulty_hearing) %>%
                               mutate(barriers_issues = ifelse(chronic_illness_disease == "no" & (difficulty_hearing == "yes" | difficulty_seeing == "yes"), 1, 0)) %>% filter(barriers_issues == 1)
 
 
@@ -292,7 +294,7 @@ if(nrow(barries_issue)>=1) {
   
   barries_issue_log <- data.frame(uuid = barries_issue$uuid, 
                                     enumerator = barries_issue$enumerator,
-                                    area = barries_issue$sub_county_div,
+                                    area = barries_issue$district_name,
                                     variable = barries_issue$variable,
                                     issue = barries_issue$issue,
                                     var_to_change = barries_issue$var_to_change,
@@ -319,7 +321,7 @@ if(nrow(barries_issue)>=1) {
 }
 
 ## Check 4: Favorite communication channel is radio/tv but they do not have a radio or tv
-comm_chan <- data %>% select(uuid, enumerator, sub_county_div, inform_pref.radio, inform_pref.television, inform_barrier.limited_tv_access, inform_barrier.limited_radio_access) %>%  
+comm_chan <- data %>% select(uuid, enumerator, district_name, inform_pref.radio, inform_pref.television, inform_barrier.limited_tv_access, inform_barrier.limited_radio_access) %>%  
                           mutate(comm_chan_issue = ifelse((inform_pref.radio == 1 & inform_barrier.limited_radio_access) | (inform_pref.television == 1 & inform_barrier.limited_tv_access == 1), 1, 0)) %>%
                           filter(comm_chan_issue == 1)
 
@@ -336,7 +338,7 @@ if(nrow(comm_chan)>=1) {
   
   comm_chan_log <- data.frame(uuid = comm_chan$uuid, 
                                 enumerator = comm_chan$enumerator,
-                                area = comm_chan$sub_county_div,
+                                area = comm_chan$district_name,
                                 variable = comm_chan$variable,
                                 issue = comm_chan$issue,
                                 var_to_change = barries_issue$var_to_change,
@@ -365,6 +367,8 @@ int_feedback <- data %>% select(interview_feedback, respondent_sex, respondent_a
                                 feedback_details, corrective_measure, complainant_name, complainant_type, complainant_id, respondent_telephone, name_pers_recording, title_pers_recording,
                                 feedback_note) %>% filter(interview_feedback == "yes")
 
+write.xlsx(int_feedback, paste0("./output/rcce_interview_feedback_",today,".xlsx"))
+
 ## Bind all
 cleaning_log <- rbind(covid_comm_log,
                       liveli_issue_log,
@@ -373,8 +377,8 @@ cleaning_log <- rbind(covid_comm_log,
 ## Final
 list <- list("Enumerators checks" = enumerator_checks,
              "Cleaning log" = cleaning_log,
-             "Productivity" = n_surveys_log,
-             "Interview feedback" = int_feedback)
+             "Productivity" = n_surveys_log
+             )
 
 write.xlsx(list, paste0("./output/rcce_cleaning_log_",today,".xlsx"))
 browseURL(paste0("./output/rcce_cleaning_log_",today,".xlsx"))
