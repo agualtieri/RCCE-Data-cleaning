@@ -60,7 +60,7 @@ check_time <- function(data, duration_threshold_lower, duration_threshold_upper)
     }
 
   
-  time_grab <- time_problems %>% dplyr::select(uuid, enumerator, sub_county_div, status_name, duration_min, variable,	has_issue,	issue_type)
-  names(time_grab) <- c("uuid", "enumerator", "area", "status",	"value",	"variable",	"has_issue",	"issue_type")
+  time_grab <- time_problems %>% dplyr::select(uuid, enumerator, district_name, refugee_settlement, status_name, duration_min, variable,	has_issue,	issue_type)
+  names(time_grab) <- c("uuid", "enumerator", "area", "settlemet", "status",	"value",	"variable",	"has_issue",	"issue_type")
   return(time_grab)
 }
