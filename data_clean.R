@@ -25,7 +25,7 @@ names(data)[names(data) == "_index"] <- "index"
 names(data)[names(data) == "_uuid"] <- "uuid"
 
 ## Load cleaning logs and enumerators checks
-lst <- lapply(1:2, function(i) read.xlsx("./output/rcce_cleaning_log_2020-09-03_test.xlsx", 
+lst <- lapply(1:2, function(i) read.xlsx("./output/rcce_cleaning_log_2020-09-03.xlsx", 
                                           sheet = i))
 enumerators_checks <- lst[[1]]
 cleaning_log <- lst[[2]]
@@ -34,7 +34,7 @@ cleaning_log <- lst[[2]]
 ### Clean data
 
 ## Delete surveys from dataset and cleaning log
-enumerators_checks <- enumerators_checks %>% filter(delete == TRUE)
+enumerators_checks <- enumerators_checks %>% dplyr::filter(delete == "TRUE")
 
 data_red <- data[!(data$uuid %in% enumerators_checks$uuid),]
 cleaning_log_red <- cleaning_log[!(cleaning_log$uuid %in% enumerators_checks$uuid),]
@@ -57,13 +57,12 @@ mylog <- cleaninglog(ids = cleaning_log_red$uuid,
 data_clean <- clog_clean(data_red, mylog)
 
 ## Convert factors to numeric
-char_columns <- sapply(data_clean, is.factor)             
-data_clean[ , char_columns] <- as.data.frame(apply(data_clean[ , char_columns], 2, as.numeric))
+# char_columns <- sapply(data_clean, is.factor)             
+# data_clean[ , char_columns] <- as.data.frame(apply(data_clean[ , char_columns], 2, as.numeric))
 
-sapply(data_clean, class)
+# sapply(data_clean, class)
 
-
-
+## Save and open final document
 write.xlsx(data_clean, paste0("./output/rcce_clean_dataset_",today,".xlsx"))
 browseURL(paste0("./output/rcce_clean_dataset_",today,".xlsx"))
 

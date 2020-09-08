@@ -19,6 +19,7 @@ require(tidyverse)
 require(openxlsx)
 require(stringr)
 require(lubridate)
+require(plyr)
 
 
 ## Load sources
@@ -184,7 +185,7 @@ if(nrow(n_surveys)>=1) {
 }             
 
 ## Bind All
-enumerator_checks <- rbind(check_time_log, shortest_path_log) 
+enumerator_checks <- rbind.fill(check_time_log, shortest_path_log) 
 
 # write.xlsx(enumerator_checks, paste0("./output/rcce_enumerators_check_",today,".xlsx"))
 
