@@ -20,12 +20,12 @@ require(clog)
 
 
 ## Load data to clean
-data <- read.xlsx("./input/RCCE_survey_-_latest_version_-_False_-_2020-09-03-06-57-41.xlsx")
+data <- read.xlsx("./input/UGA2002a_-_latest_version_-_False_-_2020-09-16-08-44-32.xlsx")
 names(data)[names(data) == "_index"] <- "index"
 names(data)[names(data) == "_uuid"] <- "uuid"
 
 ## Load cleaning logs and enumerators checks
-lst <- lapply(1:2, function(i) read.xlsx("./output/rcce_cleaning_log_2020-09-03.xlsx", 
+lst <- lapply(1:2, function(i) read.xlsx("./output/rcce_cleaning_log_2020-09-16.xlsx", 
                                           sheet = i))
 enumerators_checks <- lst[[1]]
 cleaning_log <- lst[[2]]

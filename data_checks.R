@@ -139,7 +139,7 @@ n_surveys <- data %>% select("district_name", "refugee_settlement", "start", "en
                                  separate(start, c("start_date", "start_time"), "T") %>% separate(end, c("end_date", "end_time"), "T")
 
 n_surveys <- n_surveys %>% select(district_name, refugee_settlement, start_date, enumerator) %>% 
-                                             group_by(start_date, enumerator) %>% mutate(n_surveys = n()) %>% 
+                                             dplyr::group_by(start_date, enumerator) %>% dplyr::mutate(n_surveys = n()) %>% 
                                                                       mutate(issue=ifelse((n_surveys < 6), "less than 6 surveys", "no issue")) 
 
 
