@@ -29,7 +29,7 @@ source("./R/check_time.R")
 
 
 ## Upload data to be cleaned  - load the latest file that needs to be cleaned
-data <- read.xlsx("./input/RCCE_survey_-_latest_version_-_False_-_2020-09-03-06-57-41.xlsx")
+data <- read.xlsx("./input/UGA2002a_-_latest_version_-_False_-_2020-09-21-03-43-15.xlsx")
 names(data)[names(data) == "_index"] <- "index"
 names(data)[names(data) == "_uuid"] <- "uuid"
 
@@ -140,7 +140,8 @@ n_surveys <- data %>% select("district_name", "refugee_settlement", "start", "en
 
 n_surveys <- n_surveys %>% select(district_name, refugee_settlement, start_date, enumerator) %>% 
                                              dplyr::group_by(start_date, enumerator) %>% dplyr::mutate(n_surveys = n()) %>% 
-                                                                      mutate(issue=ifelse((n_surveys < 6), "less than 6 surveys", "no issue")) 
+                                                                      mutate(issue=ifelse((n_surveys < 6), "less than 6 surveys", "no issue")) %>% filter(n_surveys <6)
+                                                                
 
 
                                                            
@@ -325,7 +326,7 @@ if(nrow(barries_issue)>=1) {
 
 ## Check 4: Favorite communication channel is radio/tv but they do not have a radio or tv
 comm_chan <- data %>% select(uuid, enumerator, district_name, inform_pref.radio, inform_pref.television, inform_barrier.limited_tv_access, inform_barrier.limited_radio_access) %>%  
-                          mutate(comm_chan_issue = ifelse((inform_pref.radio == 1 & inform_barrier.limited_radio_access) | (inform_pref.television == 1 & inform_barrier.limited_tv_access == 1), 1, 0)) %>%
+                          mutate(comm_chan_issue = ifelse((inform_pref.radio == "1" & inform_barrier.limited_radio_access == "1") | (inform_pref.television == "1" & inform_barrier.limited_tv_access == "1"), 1, 0)) %>%
                           filter(comm_chan_issue == 1)
 
 if(nrow(comm_chan)>=1) {
@@ -340,15 +341,15 @@ if(nrow(comm_chan)>=1) {
   
   
   comm_chan_log <- data.frame(uuid = comm_chan$uuid, 
-                                enumerator = comm_chan$enumerator,
-                                area = comm_chan$district_name,
-                                variable = comm_chan$variable,
-                                issue = comm_chan$issue,
-                                var_to_change = barries_issue$var_to_change,
-                                value_to_change = barries_issue$value_to_change,
-                                fix = comm_chan$fix, 
-                                checked_by = comm_chan$checked_by)
-  
+                              enumerator = comm_chan$enumerator,
+                              area = comm_chan$district_name,
+                              variable = comm_chan$variable,
+                              issue = comm_chan$issue,
+                              var_to_change = comm_chan$var_to_change,
+                              value_to_change = comm_chan$value_to_change,
+                              fix = comm_chan$fix, 
+                              checked_by = comm_chan$checked_by
+                              )
   
 } else {
   
@@ -366,7 +367,7 @@ if(nrow(comm_chan)>=1) {
 }
 
 ### Interview Feedback
-int_feedback <- data %>% select(interview_feedback, respondent_sex, respondent_age, nationality, nationality_other, status, district_name, sub_county_div, refugee_settlement, 
+int_feedback <- data %>% select(interview_feedback, respondent_sex, respondent_age, nationality, nationality_other, status, district_name, refugee_settlement, 
                                 feedback_details, corrective_measure, complainant_name, complainant_type, complainant_id, respondent_telephone, name_pers_recording, title_pers_recording,
                                 feedback_note) %>% filter(interview_feedback == "yes")
 
